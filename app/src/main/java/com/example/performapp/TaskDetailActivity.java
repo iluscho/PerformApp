@@ -36,13 +36,12 @@ public class TaskDetailActivity extends AppCompatActivity {
             btnOpenMap.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // Открытие карты через Intent (используется Google Maps)
-                    Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + task.getAddress());
-                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                    mapIntent.setPackage("com.google.android.apps.maps");
-                    if (mapIntent.resolveActivity(getPackageManager()) != null) {
-                        startActivity(mapIntent);
-                    }
+                    //Открытие карты через Intent (используется Google Maps)
+
+                    Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse("geo:51.77614, 55.19611 "));
+                    startActivity(intent);
                 }
             });
         }
