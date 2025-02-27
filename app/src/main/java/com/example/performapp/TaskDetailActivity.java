@@ -36,14 +36,20 @@ public class TaskDetailActivity extends AppCompatActivity {
             btnOpenMap.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //Открытие карты через Intent (используется Google Maps)
-
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse("geo:51.77614, 55.19611 "));
-                    startActivity(intent);
+                    // Получаем адрес из TextView как строку
+                    String address = tvAddress.getText().toString();
+                    // Формируем URI с запросом адреса
+                    Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + Uri.encode(address));
+                    // Создаем Intent для просмотра карты
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    // Создаем chooser, чтобы пользователь мог выбрать приложение
+                    Intent chooser = Intent.createChooser(mapIntent, "Выберите приложение для карт");
+                    if (chooser.resolveActivity(getPackageManager()) != null) {
+                        startActivity(chooser);
+                    }
                 }
             });
+
         }
     }
 }

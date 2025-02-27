@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "12840603161",
+    "project_id": "performapppractic",
+    "storage_bucket": "performapppractic.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:12840603161:android:a88d9c9fc0beef37872488",
+        "android_client_info": {
+          "package_name": "com.example.performapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSfmkn_qwuvr24hJWVyV2bB6SQHBZAOWQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

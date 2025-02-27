@@ -13,6 +13,12 @@
         android:theme="@style/Theme.PerformApp"
         tools:targetApi="31">
         <activity
+            android:name=".AddRequestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ObjectRegistryActivity"
+            android:exported="false" />
+        <activity
             android:name=".TaskDetailActivity"
             android:exported="false" />
         <activity

@@ -11,6 +11,10 @@ public class Task implements Serializable {
     private String organization;
     private TaskStatus status;
 
+    // Конструктор по умолчанию (обязателен для Firestore)
+    public Task() {
+    }
+
     public Task(String id, String taskDate, String acceptanceDate, String address, String comment, String organization, TaskStatus status) {
         this.id = id;
         this.taskDate = taskDate;
@@ -21,16 +25,61 @@ public class Task implements Serializable {
         this.status = status;
     }
 
-    // Getters
-    public String getId() { return id; }
-    public String getTaskDate() { return taskDate; }
-    public String getAcceptanceDate() { return acceptanceDate; }
-    public String getAddress() { return address; }
-    public String getComment() { return comment; }
-    public String getOrganization() { return organization; }
-    public TaskStatus getStatus() { return status; }
+    // Геттеры
+    public String getId() {
+        return id;
+    }
 
-    // Setters
-    public void setAcceptanceDate(String acceptanceDate) { this.acceptanceDate = acceptanceDate; }
-    public void setStatus(TaskStatus status) { this.status = status; }
+    public String getTaskDate() {
+        return taskDate;
+    }
+
+    public String getAcceptanceDate() {
+        return acceptanceDate;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public String getOrganization() {
+        return organization;
+    }
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    // Сеттеры
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setTaskDate(String taskDate) {
+        this.taskDate = taskDate;
+    }
+
+    public void setAcceptanceDate(String acceptanceDate) {
+        this.acceptanceDate = acceptanceDate;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
 }

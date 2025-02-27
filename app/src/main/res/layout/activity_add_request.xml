@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:fitsSystemWindows="true">
+
+    <!-- Выбор объекта из реестра -->
+    <Spinner
+        android:id="@+id/spinnerRegistry"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- Поле для ввода комментария к заявке -->
+    <EditText
+        android:id="@+id/etComment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Комментарий к заявке" />
+
+    <!-- Кнопка добавления заявки -->
+    <Button
+        android:id="@+id/btnAddRequest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Добавить заявку" />
+
+</LinearLayout>
