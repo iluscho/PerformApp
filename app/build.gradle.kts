@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
@@ -30,6 +31,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    defaultConfig {
+        // Указываем testInstrumentationRunner в Kotlin DSL
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 }
 
 dependencies {
@@ -41,6 +46,19 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
     testImplementation(libs.junit)
+    testImplementation(libs.core)
+    testImplementation(libs.runner)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    // Для JUnit
+    testImplementation("junit:junit:4.13.2")
+
+    // Для Mockito
+    testImplementation("org.mockito:mockito-core:4.6.1")
+
+    // Для AndroidJUnit (если вы тестируете Android код)
+    testImplementation("androidx.test.ext:junit:1.1.3")
+    testImplementation("androidx.test:core:1.4.0")
 }
+
+

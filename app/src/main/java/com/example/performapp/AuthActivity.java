@@ -20,9 +20,10 @@ import com.google.firebase.database.ValueEventListener;
 
 public class AuthActivity extends AppCompatActivity {
 
-    private EditText etLogin, etPassword;
+    EditText etLogin;
+    EditText etPassword;
     private Button btnLogin, btnRegister;
-    private DatabaseReference usersRef;
+    DatabaseReference usersRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +54,7 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     // Функция регистрации нового пользователя по логину
-    private void registerUser() {
+    void registerUser() {
         final String login = etLogin.getText().toString().trim();
         final String password = etPassword.getText().toString().trim();
 

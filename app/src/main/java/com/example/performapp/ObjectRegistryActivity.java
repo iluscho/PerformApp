@@ -20,7 +20,7 @@ public class ObjectRegistryActivity extends AppCompatActivity {
     private static final String TAG = "ObjectRegistryActivity";
     private EditText etObjectName, etObjectAddress, etObjectDescription;
     private Button btnAddObject;
-    private DatabaseReference objectsRef;
+    DatabaseReference objectsRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
