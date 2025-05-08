@@ -9,5 +9,11 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewWorkerTasks"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="588dp" />
+
+    <Button
+        android:id="@+id/buttonexit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Выйти" />
 </LinearLayout>

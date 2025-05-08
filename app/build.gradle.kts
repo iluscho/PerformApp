@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
+    implementation(libs.leanback)
     testImplementation(libs.junit)
     testImplementation(libs.core)
     testImplementation(libs.runner)

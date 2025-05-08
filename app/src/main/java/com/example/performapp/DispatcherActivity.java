@@ -1,9 +1,9 @@
 package com.example.performapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -11,20 +11,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DispatcherActivity extends AppCompatActivity {
+
     private RecyclerView recyclerView;
     private TaskAdapter taskAdapter;
     private List<Task> taskList = new ArrayList<>();
-    private static final String TAG = "DispatcherActivity";
+    private static final String PREF_NAME = "MyAppPrefs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,19 +32,14 @@ public class DispatcherActivity extends AppCompatActivity {
         taskAdapter = new TaskAdapter(taskList, null);
         recyclerView.setAdapter(taskAdapter);
 
-        // Получаем экземпляр Realtime Database
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        // Ссылка на узел "tasks"
-        final DatabaseReference tasksRef = database.getReference("tasks");
+        DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference("tasks");
 
-        // Слушатель изменений в узле "tasks"
         tasksRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
                 taskList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    // Преобразуем данные в объект Task
-                    Task task = snapshot.getValue(Task.class);
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Task task = ds.getValue(Task.class);
                     if (task != null) {
                         taskList.add(task);
                     }
@@ -57,28 +48,23 @@ public class DispatcherActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.w(TAG, "Ошибка при прослушивании tasks", databaseError.toException());
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.w("DispatcherActivity", "Ошибка загрузки задач", error.toException());
             }
         });
 
-        // Кнопка перехода в активность "Реестр объектов"
-        Button btnObjectRegistry = findViewById(R.id.btnObjectRegistry);
-        btnObjectRegistry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(DispatcherActivity.this, ObjectRegistryActivity.class));
-            }
-        });
+        findViewById(R.id.btnObjectRegistry).setOnClickListener(v ->
+                startActivity(new Intent(this, ObjectRegistryActivity.class)));
 
-        // Кнопка открытия активности для добавления заявки
-        Button btnAddTask = findViewById(R.id.btnAddTask);
-        btnAddTask.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Запускаем активность для добавления новой заявки
-                startActivity(new Intent(DispatcherActivity.this, AddRequestActivity.class));
-            }
+        findViewById(R.id.btnAddTask).setOnClickListener(v ->
+                startActivity(new Intent(this, AddRequestActivity.class)));
+
+        Button buttonExit = findViewById(R.id.buttondispexit);
+        buttonExit.setOnClickListener(v -> {
+            getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit().clear().apply();
+            Intent intent = new Intent(this, AuthActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         });
     }
 }

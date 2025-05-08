@@ -10,12 +10,13 @@ public class Task implements Serializable {
     private String comment;
     private String organization;
     private TaskStatus status;
+    private String workerName; // Новый атрибут
 
-    // Конструктор по умолчанию (обязателен для Firestore)
     public Task() {
     }
 
-    public Task(String id, String taskDate, String acceptanceDate, String address, String comment, String organization, TaskStatus status) {
+    public Task(String id, String taskDate, String acceptanceDate, String address, String comment,
+                String organization, TaskStatus status) {
         this.id = id;
         this.taskDate = taskDate;
         this.acceptanceDate = acceptanceDate;
@@ -23,63 +24,39 @@ public class Task implements Serializable {
         this.comment = comment;
         this.organization = organization;
         this.status = status;
+        this.workerName = ""; // Изначально пустое
     }
 
-    // Геттеры
-    public String getId() {
-        return id;
-    }
+    // Геттеры и сеттеры
+    public String getId() { return id; }
 
-    public String getTaskDate() {
-        return taskDate;
-    }
+    public String getTaskDate() { return taskDate; }
 
-    public String getAcceptanceDate() {
-        return acceptanceDate;
-    }
+    public String getAcceptanceDate() { return acceptanceDate; }
 
-    public String getAddress() {
-        return address;
-    }
+    public String getAddress() { return address; }
 
-    public String getComment() {
-        return comment;
-    }
+    public String getComment() { return comment; }
 
-    public String getOrganization() {
-        return organization;
-    }
+    public String getOrganization() { return organization; }
 
-    public TaskStatus getStatus() {
-        return status;
-    }
+    public TaskStatus getStatus() { return status; }
 
-    // Сеттеры
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getWorkerName() { return workerName; }
 
-    public void setTaskDate(String taskDate) {
-        this.taskDate = taskDate;
-    }
+    public void setId(String id) { this.id = id; }
 
-    public void setAcceptanceDate(String acceptanceDate) {
-        this.acceptanceDate = acceptanceDate;
-    }
+    public void setTaskDate(String taskDate) { this.taskDate = taskDate; }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    public void setAcceptanceDate(String acceptanceDate) { this.acceptanceDate = acceptanceDate; }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
+    public void setAddress(String address) { this.address = address; }
 
-    public void setOrganization(String organization) {
-        this.organization = organization;
-    }
+    public void setComment(String comment) { this.comment = comment; }
 
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
+    public void setOrganization(String organization) { this.organization = organization; }
+
+    public void setStatus(TaskStatus status) { this.status = status; }
+
+    public void setWorkerName(String workerName) { this.workerName = workerName; }
 }
