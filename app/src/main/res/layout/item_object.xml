@@ -35,4 +35,13 @@
         android:textColor="#555555"
         android:maxLines="3"
         android:ellipsize="end" />
+
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Удалить"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#FF4444"
+        android:textColor="#FFFFFF" />
 </LinearLayout>
