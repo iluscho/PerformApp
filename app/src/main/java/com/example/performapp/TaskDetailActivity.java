@@ -8,6 +8,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import android.widget.Toast;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 
 public class TaskDetailActivity extends AppCompatActivity {
     private TextView tvAddress, tvComment, tvTaskDate, tvAcceptanceDate, tvOrganization;
@@ -24,14 +31,16 @@ public class TaskDetailActivity extends AppCompatActivity {
         tvAcceptanceDate = findViewById(R.id.tvAcceptanceDate);
         tvOrganization = findViewById(R.id.tvOrganization);
         btnOpenMap = findViewById(R.id.btnOpenMap);
+        Button btnCompleteTask = findViewById(R.id.btnCompleteTask);
+        DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference("tasks");
 
         Task task = (Task) getIntent().getSerializableExtra("task");
         if (task != null) {
-            tvAddress.setText(task.getAddress());
-            tvComment.setText(task.getComment());
-            tvTaskDate.setText("Дата задачи: " + task.getTaskDate());
-            tvAcceptanceDate.setText("Дата принятия: " + task.getAcceptanceDate());
-            tvOrganization.setText("Организация: " + task.getOrganization());
+            tvAddress.setText(tvAddress.getText() + task.getAddress());
+            tvComment.setText(tvComment.getText() + task.getComment());
+            tvTaskDate.setText(tvTaskDate.getText() + task.getTaskDate());
+            tvAcceptanceDate.setText(tvAcceptanceDate.getText() + task.getAcceptanceDate());
+            tvOrganization.setText(tvOrganization.getText() + task.getOrganization());
 
             btnOpenMap.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -46,6 +55,27 @@ public class TaskDetailActivity extends AppCompatActivity {
                     Intent chooser = Intent.createChooser(mapIntent, "Выберите приложение для карт");
                     if (chooser.resolveActivity(getPackageManager()) != null) {
                         startActivity(chooser);
+                    }
+                }
+            });
+            btnCompleteTask.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (task != null) {
+                        // Установка даты и времени завершения
+                        String completionDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                        task.setCompletionDate(completionDate);
+                        task.setStatus(TaskStatus.COMPLETED); // Если у тебя есть статус COMPLETED
+
+                        // Обновление задачи в Firebase
+                        tasksRef.child(task.getId()).setValue(task)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(TaskDetailActivity.this, "Задача завершена", Toast.LENGTH_SHORT).show();
+                                    finish(); // Закрыть экран или перейти на другой
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(TaskDetailActivity.this, "Ошибка завершения", Toast.LENGTH_SHORT).show();
+                                });
                     }
                 }
             });

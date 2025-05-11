@@ -11,35 +11,42 @@
         android:id="@+id/tvTaskDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Дата задачи:"/>
+        android:text="Время создания: "/>
 
     <TextView
         android:id="@+id/tvAcceptanceDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Дата принятия:"/>
-
-    <TextView
-        android:id="@+id/tvAddress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Адрес:"/>
-
-    <TextView
-        android:id="@+id/tvComment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Комментарий:"/>
+        android:text="Время принятия: "/>
 
     <TextView
         android:id="@+id/tvOrganization"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Организация:"/>
+        android:text="Объект: "/>
+
+    <TextView
+        android:id="@+id/tvAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Адрес: "/>
+
+    <TextView
+        android:id="@+id/tvComment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Комментарий: "/>
 
     <Button
         android:id="@+id/btnOpenMap"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Открыть карту"/>
+
+    <Button
+        android:id="@+id/btnCompleteTask"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Завершить задачу"
+        android:layout_marginTop="16dp"/>
 </LinearLayout>

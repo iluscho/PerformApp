@@ -6,6 +6,7 @@ public class Task implements Serializable {
     private String id;
     private String taskDate;
     private String acceptanceDate;
+    private String completionDate; // Новое поле
     private String address;
     private String comment;
     private String organization;
@@ -13,6 +14,7 @@ public class Task implements Serializable {
     private String workerName; // Новый атрибут
 
     public Task() {
+        this.completionDate = ""; // Изначально пустое
     }
 
     public Task(String id, String taskDate, String acceptanceDate, String address, String comment,
@@ -24,39 +26,29 @@ public class Task implements Serializable {
         this.comment = comment;
         this.organization = organization;
         this.status = status;
-        this.workerName = ""; // Изначально пустое
+        this.workerName = "";      // Изначально пустое
+        this.completionDate = "";  // Изначально пустое
     }
 
-    // Геттеры и сеттеры
+    // Геттеры
     public String getId() { return id; }
-
     public String getTaskDate() { return taskDate; }
-
     public String getAcceptanceDate() { return acceptanceDate; }
-
+    public String getCompletionDate() { return completionDate; } // Геттер для даты завершения
     public String getAddress() { return address; }
-
     public String getComment() { return comment; }
-
     public String getOrganization() { return organization; }
-
     public TaskStatus getStatus() { return status; }
-
     public String getWorkerName() { return workerName; }
 
+    // Сеттеры
     public void setId(String id) { this.id = id; }
-
     public void setTaskDate(String taskDate) { this.taskDate = taskDate; }
-
     public void setAcceptanceDate(String acceptanceDate) { this.acceptanceDate = acceptanceDate; }
-
+    public void setCompletionDate(String completionDate) { this.completionDate = completionDate; } // Сеттер для даты завершения
     public void setAddress(String address) { this.address = address; }
-
     public void setComment(String comment) { this.comment = comment; }
-
     public void setOrganization(String organization) { this.organization = organization; }
-
     public void setStatus(TaskStatus status) { this.status = status; }
-
     public void setWorkerName(String workerName) { this.workerName = workerName; }
 }

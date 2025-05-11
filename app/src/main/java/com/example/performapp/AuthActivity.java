@@ -18,7 +18,6 @@ public class AuthActivity extends AppCompatActivity {
     EditText etLogin, etPassword;
     Button btnLogin, btnRegister;
     DatabaseReference usersRef;
-
     SharedPreferences preferences;
     private static final String PREF_NAME = "MyAppPrefs";
     private static final String KEY_USER_ID = "userId";

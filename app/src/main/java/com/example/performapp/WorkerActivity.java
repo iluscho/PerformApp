@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -31,6 +32,9 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker);
 
+        Button btnActiveTask = findViewById(R.id.btnCompleteTask);
+        btnActiveTask.setVisibility(View.GONE); // по умолчанию скрыта
+
         currentWorkerId = getIntent().getStringExtra("userId");
         tasksRef = FirebaseDatabase.getInstance().getReference("tasks");
 
@@ -48,6 +52,7 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
         });
 
         loadTasks();
+        checkForActiveTask(btnActiveTask); // Отдельно проверяем активную задачу
     }
 
     private void loadTasks() {
@@ -70,11 +75,14 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
             }
         });
     }
-
     @Override
     public void onAcceptClicked(Task task) {
         task.setStatus(TaskStatus.ACCEPTED);
-        task.setAcceptanceDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+
+        // Установка даты и времени принятия задачи
+        String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        task.setAcceptanceDate(dateTime);
+
         task.setWorkerName(currentWorkerId);
 
         tasksRef.child(task.getId()).setValue(task)
@@ -82,12 +90,59 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
                     Toast.makeText(this, "Задача принята", Toast.LENGTH_SHORT).show();
                     taskList.remove(task);
                     taskAdapter.notifyDataSetChanged();
+
+                    // После успешного принятия задачи проверяем кнопку
+                    checkForActiveTask(findViewById(R.id.btnCompleteTask));
+
+                    // Переход к деталям задачи
                     Intent intent = new Intent(this, TaskDetailActivity.class);
                     intent.putExtra("task", task);
                     startActivity(intent);
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Ошибка обновления", Toast.LENGTH_SHORT).show());
     }
+
+    private void checkForActiveTask(Button activeTaskButton) {
+        tasksRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Task activeTask = null;
+
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Task task = ds.getValue(Task.class);
+                    if (task != null &&
+                            task.getStatus() == TaskStatus.ACCEPTED &&
+                            currentWorkerId.equals(task.getWorkerName()) &&
+                            (task.getCompletionDate() == null || task.getCompletionDate().isEmpty())) {
+                        activeTask = task;
+                        break;
+                    }
+                }
+
+                // Если активная задача найдена, показываем кнопку
+                if (activeTask != null) {
+                    activeTaskButton.setVisibility(View.VISIBLE);
+                    Task finalActiveTask = activeTask;
+                    activeTaskButton.setOnClickListener(v -> {
+                        Intent intent = new Intent(WorkerActivity.this, TaskDetailActivity.class);
+                        intent.putExtra("task", finalActiveTask);
+                        startActivity(intent);
+                    });
+                } else {
+                    // Если нет активной задачи, скрываем кнопку
+                    activeTaskButton.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(WorkerActivity.this, "Ошибка при проверке активной задачи", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+
 
     @Override
     public void onBookClicked(Task task) {
