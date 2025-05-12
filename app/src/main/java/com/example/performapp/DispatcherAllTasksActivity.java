@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -15,35 +14,42 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class DispatcherAllTasksActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private DispatcherTaskAdapter taskAdapter;
     private final List<Task> taskList = new ArrayList<>();
-    private String filterDate = null;
+    private String filterStartDate = null;
+    private String filterEndDate = null;
     private String filterWorker = null;
     private List<String> allWorkers = new ArrayList<>();
-
+    private TextInputEditText dateRangeEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dispatcher_all_tasks);
-        findViewById(R.id.btnClearFilters).setOnClickListener(v -> {
-            filterDate = null;
-            filterWorker = null;
-            loadAllTasks(); // Перезагрузка всех задач без фильтрации
-        });
 
+        findViewById(R.id.btnClearFilters).setOnClickListener(v -> {
+            filterStartDate = null;
+            filterEndDate = null;
+            filterWorker = null;
+            loadAllTasks();
+        });
 
         recyclerView = findViewById(R.id.recyclerViewAllTasks);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -51,20 +57,21 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         taskAdapter = new DispatcherTaskAdapter(taskList, task -> {
             Toast.makeText(this, "Работник снят", Toast.LENGTH_SHORT).show();
         });
+
         findViewById(R.id.btnFilter).setOnClickListener(v -> showFilterDialog());
 
-        loadWorkers(); // Загружаем список работников заранее
-
+        loadWorkers();
         recyclerView.setAdapter(taskAdapter);
         loadAllTasks();
     }
+
     private void loadWorkers() {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
         ref.orderByChild("role").equalTo("worker").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 allWorkers.clear();
-                allWorkers.add("Все"); // Пункт "Все"
+                allWorkers.add("Все");
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     String name = ds.child("name").getValue(String.class);
                     if (name != null) allWorkers.add(name);
@@ -77,14 +84,30 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             }
         });
     }
+
     private void showFilterDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_filters, null);
         builder.setView(dialogView);
 
-        DatePicker datePicker = dialogView.findViewById(R.id.datePicker);
+        dateRangeEditText = dialogView.findViewById(R.id.dateEditText);
         Spinner workerSpinner = dialogView.findViewById(R.id.workerSpinner);
         Button btnApply = dialogView.findViewById(R.id.btnApplyFilters);
+
+        // Настройка Material Date Picker для выбора диапазона
+        MaterialDatePicker<androidx.core.util.Pair<Long, Long>> datePicker =
+                MaterialDatePicker.Builder.dateRangePicker()
+                        .setTitleText("Выберите период")
+                        .build();
+
+        dateRangeEditText.setOnClickListener(v -> datePicker.show(getSupportFragmentManager(), "DATE_RANGE_PICKER"));
+
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            String startDate = sdf.format(new Date(selection.first));
+            String endDate = sdf.format(new Date(selection.second));
+            dateRangeEditText.setText(String.format("%s - %s", startDate, endDate));
+        });
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, allWorkers);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -94,11 +117,16 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         dialog.show();
 
         btnApply.setOnClickListener(v -> {
-            int day = datePicker.getDayOfMonth();
-            int month = datePicker.getMonth() + 1;
-            int year = datePicker.getYear();
+            String dateRange = dateRangeEditText.getText().toString().trim();
+            if (!dateRange.isEmpty()) {
+                String[] dates = dateRange.split(" - ");
+                filterStartDate = dates[0];
+                filterEndDate = dates.length > 1 ? dates[1] : dates[0];
+            } else {
+                filterStartDate = null;
+                filterEndDate = null;
+            }
 
-            filterDate = String.format("%04d-%02d-%02d", year, month, day);
             filterWorker = workerSpinner.getSelectedItem().toString();
             if ("Все".equals(filterWorker)) filterWorker = null;
 
@@ -106,6 +134,7 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             applyFilters();
         });
     }
+
     private void applyFilters() {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("tasks");
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -130,8 +159,18 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                         } catch (IllegalArgumentException ignored) { }
                     }
 
-                    if (filterDate != null && (taskDate == null || !taskDate.equals(filterDate))) continue;
-                    if (filterWorker != null && (workerName == null || !workerName.equals(filterWorker))) continue;
+                    // Фильтрация по дате (если задан диапазон)
+                    if (filterStartDate != null && taskDate != null) {
+                        if (taskDate.compareTo(filterStartDate) < 0 ||
+                                (filterEndDate != null && taskDate.compareTo(filterEndDate) > 0)) {
+                            continue;
+                        }
+                    }
+
+                    // Фильтрация по работнику
+                    if (filterWorker != null && (workerName == null || !workerName.equals(filterWorker))) {
+                        continue;
+                    }
 
                     Task t = new Task(id, taskDate, acceptanceDate, address, comment, organization, status);
                     t.setWorkerName(workerName != null ? workerName : "");
@@ -148,7 +187,6 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         });
     }
 
-
     private void loadAllTasks() {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("tasks");
         ref.addValueEventListener(new ValueEventListener() {
@@ -156,15 +194,15 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 taskList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
-                    String id             = ds.getKey();
-                    String address        = ds.child("address").getValue(String.class);
-                    String organization   = ds.child("organization").getValue(String.class);
-                    String workerName     = ds.child("workerName").getValue(String.class);
-                    String taskDate       = ds.child("taskDate").getValue(String.class);
+                    String id = ds.getKey();
+                    String address = ds.child("address").getValue(String.class);
+                    String organization = ds.child("organization").getValue(String.class);
+                    String workerName = ds.child("workerName").getValue(String.class);
+                    String taskDate = ds.child("taskDate").getValue(String.class);
                     String acceptanceDate = ds.child("acceptanceDate").getValue(String.class);
                     String completionDate = ds.child("completionDate").getValue(String.class);
-                    String comment        = ds.child("comment").getValue(String.class);
-                    String statusStr      = ds.child("status").getValue(String.class);
+                    String comment = ds.child("comment").getValue(String.class);
+                    String statusStr = ds.child("status").getValue(String.class);
 
                     TaskStatus status = TaskStatus.PENDING;
                     if (statusStr != null && !statusStr.isEmpty()) {
