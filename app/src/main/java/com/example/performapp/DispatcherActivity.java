@@ -85,18 +85,21 @@ public class DispatcherActivity extends AppCompatActivity {
                         } catch (IllegalArgumentException ignored) { }
                     }
 
-                    Task t = new Task(
-                            id,
-                            taskDate       != null ? taskDate       : "",
-                            acceptanceDate != null ? acceptanceDate : "",
-                            address        != null ? address        : "",
-                            comment        != null ? comment        : "",
-                            organization   != null ? organization   : "",
-                            status
-                    );
-                    t.setWorkerName(workerName   != null ? workerName   : "");
-                    t.setCompletionDate(completionDate != null ? completionDate : "");
-                    taskList.add(t);
+                    // ❗ Фильтрация по статусу
+                    if (status == TaskStatus.PENDING || status == TaskStatus.ACCEPTED || status == TaskStatus.BOOKED) {
+                        Task t = new Task(
+                                id,
+                                taskDate       != null ? taskDate       : "",
+                                acceptanceDate != null ? acceptanceDate : "",
+                                address        != null ? address        : "",
+                                comment        != null ? comment        : "",
+                                organization   != null ? organization   : "",
+                                status
+                        );
+                        t.setWorkerName(workerName   != null ? workerName   : "");
+                        t.setCompletionDate(completionDate != null ? completionDate : "");
+                        taskList.add(t);
+                    }
                 }
                 taskAdapter.notifyDataSetChanged();
             }
@@ -112,4 +115,5 @@ public class DispatcherActivity extends AppCompatActivity {
             }
         });
     }
+
 }

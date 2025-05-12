@@ -4,5 +4,6 @@ public enum TaskStatus {
     PENDING,
     ACCEPTED,
     BOOKED,
-    COMPLETED
+    COMPLETED,
+    CANCELLED
 }

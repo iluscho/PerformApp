@@ -22,7 +22,6 @@ import java.util.Map;
 public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAdapter.DispatcherViewHolder> {
     private final List<Task> taskList;
     private final OnRemoveWorkerClickListener listener;
-
     public interface OnRemoveWorkerClickListener {
         void onRemoveWorkerClicked(Task task);
     }
@@ -52,8 +51,9 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
     class DispatcherViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvAddress, tvOrganization, tvWorker, tvStatus,
                 tvTaskDate, tvAcceptanceDate, tvCompletionDate, tvComment;
-        private final Button btnRemoveWorker;
+        private final Button btnRemoveWorker, btnCancelTask;
         private final LinearLayout detailsContainer;
+
 
         public DispatcherViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -66,6 +66,7 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
             tvCompletionDate = itemView.findViewById(R.id.tvCompletionDate);
             tvComment        = itemView.findViewById(R.id.tvComment);
             btnRemoveWorker  = itemView.findViewById(R.id.btnRemoveWorker);
+            btnCancelTask = itemView.findViewById(R.id.btnCancelTask);
             detailsContainer = itemView.findViewById(R.id.detailsContainer);
 
             itemView.setOnClickListener(v -> {
@@ -100,7 +101,33 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
                 if (!canRemove) return;
                 updateWorkerAndStatus(task, v);
             });
+            if (task.getStatus() != TaskStatus.CANCELLED && task.getStatus() != TaskStatus.COMPLETED) {
+                btnCancelTask.setVisibility(View.VISIBLE);
+                btnCancelTask.setOnClickListener(v -> cancelTask(task, v));
+            } else {
+                btnCancelTask.setVisibility(View.GONE);
+            }
+
         }
+        private void cancelTask(Task task, View anchor) {
+            DatabaseReference ref = FirebaseDatabase.getInstance()
+                    .getReference("tasks")
+                    .child(task.getId());
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("status", TaskStatus.CANCELLED.name());
+
+            ref.updateChildren(updates).addOnCompleteListener(task1 -> {
+                if (task1.isSuccessful()) {
+                    Toast.makeText(anchor.getContext(), "Задача снята", Toast.LENGTH_SHORT).show();
+                    task.setStatus(TaskStatus.CANCELLED);
+                    notifyItemChanged(getAdapterPosition());
+                } else {
+                    Toast.makeText(anchor.getContext(), "Ошибка при снятии задачи", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
 
         private void updateWorkerAndStatus(Task task, View anchor) {
             DatabaseReference ref = FirebaseDatabase
