@@ -18,6 +18,13 @@
         android:layout_height="552dp" />
 
     <Button
+        android:id="@+id/btnAllTasks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Все задачи"
+        android:layout_marginTop="8dp"/>
+
+    <Button
         android:id="@+id/btnObjectRegistry"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

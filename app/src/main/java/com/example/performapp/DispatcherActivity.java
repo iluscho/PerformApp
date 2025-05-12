@@ -58,6 +58,10 @@ public class DispatcherActivity extends AppCompatActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
+        findViewById(R.id.btnAllTasks).setOnClickListener(v -> {
+            startActivity(new Intent(this, DispatcherAllTasksActivity.class));
+        });
+
     }
 
     private void loadTasks() {
