@@ -1,39 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal"
+    tools:context=".YourActivity">
 
-
-    <Button
+    <!-- Кнопка добавления задачи -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAddTask"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Добавить задачу" />
+        android:text="Добавить задачу"
+        android:layout_marginBottom="16dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button" />
 
+    <!-- RecyclerView для отображения списка задач -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewTasks"
         android:layout_width="match_parent"
-        android:layout_height="552dp" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp" />
 
-    <Button
+    <!-- Кнопка отображения всех задач -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAllTasks"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Все задачи"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginBottom="8dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button" />
 
-    <Button
+    <!-- Кнопка перехода к реестру объектов -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnObjectRegistry"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:baselineAligned="false"
-        android:text="Реестр обьектов" />
+        android:text="Реестр объектов"
+        android:layout_marginBottom="8dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button" />
 
-    <Button
+    <!-- Кнопка выхода -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttondispexit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="выход" />
+        android:text="Выход"
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button" />
+
 </LinearLayout>

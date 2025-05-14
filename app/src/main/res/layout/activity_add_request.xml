@@ -1,30 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    tools:context=".YourActivity">
 
-    <!-- Выбор объекта из реестра -->
-    <Spinner
-        android:id="@+id/spinnerRegistry"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <!-- Поле для ввода комментария к заявке -->
-    <EditText
-        android:id="@+id/etComment"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Комментарий к заявке" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- Кнопка добавления заявки -->
-    <Button
-        android:id="@+id/btnAddRequest"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Добавить заявку" />
+        <!-- Заголовок: Выбор объекта -->
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Выберите объект"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"
+            style="@style/TextAppearance.Material3.BodyMedium" />
 
-</LinearLayout>
+        <!-- Выбор объекта из списка -->
+        <Spinner
+            android:id="@+id/spinnerRegistry"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Заголовок: Комментарий -->
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Комментарий к заявке"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"
+            style="@style/TextAppearance.Material3.BodyMedium" />
+
+        <!-- Поле для ввода комментария -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Введите комментарий"
+            android:layout_marginBottom="24dp"
+            app:boxStrokeColor="?attr/colorPrimary"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="3"
+                android:gravity="top" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Кнопка добавления заявки -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddRequest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Добавить заявку"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.MaterialComponents.Button"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
+</ScrollView>

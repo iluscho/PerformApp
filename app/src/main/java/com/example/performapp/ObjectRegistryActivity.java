@@ -1,37 +1,40 @@
 package com.example.performapp;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
 import java.util.ArrayList;
 
 public class ObjectRegistryActivity extends AppCompatActivity {
     private static final String TAG = "ObjectRegistryActivity";
 
-    private EditText etObjectName, etObjectAddress, etObjectDescription;
-    private Button btnAddObject, btnBack;
+    private EditText etSearch;
+    private Button btnAddObject;
     private RecyclerView recyclerViewObjects;
 
     private DatabaseReference objectsRef;
     private ObjectAdapter objectAdapter;
-    private ArrayList<RegistryObject> objectList;
+    private ArrayList<RegistryObject> objectList = new ArrayList<>();
+    private ArrayList<RegistryObject> filteredList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,33 +42,29 @@ public class ObjectRegistryActivity extends AppCompatActivity {
         FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_object_registry);
 
-        initViews();
-        initFirebase();
-        setupRecyclerView();
-        loadObjectsFromFirebase();
-
-        btnAddObject.setOnClickListener(v -> addObject());
-        btnBack.setOnClickListener(v -> onBackPressed());
-    }
-
-    private void initViews() {
-        etObjectName = findViewById(R.id.etObjectName);
-        etObjectAddress = findViewById(R.id.etObjectAddress);
-        etObjectDescription = findViewById(R.id.etObjectDescription);
+        etSearch = findViewById(R.id.etSearch);
         btnAddObject = findViewById(R.id.btnAddObject);
-        btnBack = findViewById(R.id.btnBack);
         recyclerViewObjects = findViewById(R.id.recyclerViewObjects);
-    }
 
-    private void initFirebase() {
         objectsRef = FirebaseDatabase.getInstance().getReference("objects");
-    }
 
-    private void setupRecyclerView() {
-        objectList = new ArrayList<>();
-        objectAdapter = new ObjectAdapter(objectList);
+        objectAdapter = new ObjectAdapter(filteredList);
         recyclerViewObjects.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewObjects.setAdapter(objectAdapter);
+
+        loadObjectsFromFirebase();
+
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterObjects(s.toString());
+            }
+        });
+
+        btnAddObject.setOnClickListener(v -> showAddObjectDialog());
     }
 
     private void loadObjectsFromFirebase() {
@@ -75,48 +74,92 @@ public class ObjectRegistryActivity extends AppCompatActivity {
                 objectList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     RegistryObject obj = ds.getValue(RegistryObject.class);
-                    if (obj != null) {
-                        objectList.add(obj);
-                    }
+                    if (obj != null) objectList.add(obj);
                 }
-                objectAdapter.notifyDataSetChanged();
+                filterObjects(etSearch.getText().toString());
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(ObjectRegistryActivity.this, "Ошибка загрузки объектов", Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "Ошибка чтения из базы данных", error.toException());
+                Toast.makeText(ObjectRegistryActivity.this, "Ошибка загрузки", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Ошибка базы", error.toException());
             }
         });
     }
 
-    private void addObject() {
-        String name = etObjectName.getText().toString().trim();
-        String address = etObjectAddress.getText().toString().trim();
-        String description = etObjectDescription.getText().toString().trim();
-
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(address)) {
-            Toast.makeText(this, "Введите название и адрес объекта", Toast.LENGTH_SHORT).show();
-            return;
+    private void filterObjects(String query) {
+        filteredList.clear();
+        for (RegistryObject obj : objectList) {
+            if (obj.getName().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(obj);
+            }
         }
-
-        String id = String.valueOf(System.currentTimeMillis());
-        RegistryObject registryObject = new RegistryObject(id, name, address, description);
-
-        objectsRef.child(id).setValue(registryObject, (error, ref) -> {
-            if (error != null) {
-                Toast.makeText(this, "Ошибка добавления объекта", Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "Ошибка при добавлении объекта", error.toException());
-            } else {
-                Toast.makeText(this, "Объект успешно добавлен", Toast.LENGTH_SHORT).show();
-                clearFields();
-            }
-        });
+        objectAdapter.notifyDataSetChanged();
     }
 
-    private void clearFields() {
-        etObjectName.setText("");
-        etObjectAddress.setText("");
-        etObjectDescription.setText("");
+    private void showAddObjectDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog);
+
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_object, null);
+        TextInputEditText etName = dialogView.findViewById(R.id.etDialogObjectName);
+        TextInputEditText etAddress = dialogView.findViewById(R.id.etDialogObjectAddress);
+        TextInputEditText etDesc = dialogView.findViewById(R.id.etDialogObjectDescription);
+        Button saveButton = dialogView.findViewById(R.id.btnSave);
+        Button cancelButton = dialogView.findViewById(R.id.btnCancel);
+
+        builder.setView(dialogView);
+        builder.setTitle("Добавить объект");
+
+        // создаём диалог
+        AlertDialog dialog = builder.create();
+
+        saveButton.setOnClickListener(v -> {
+            String name = etName.getText().toString().trim();
+            String address = etAddress.getText().toString().trim();
+            String description = etDesc.getText().toString().trim();
+
+            boolean valid = true;
+
+            if (TextUtils.isEmpty(name)) {
+                etName.setError("Введите название");
+                valid = false;
+            } else {
+                etName.setError(null);
+            }
+
+            if (TextUtils.isEmpty(address)) {
+                etAddress.setError("Введите адрес");
+                valid = false;
+            } else {
+                etAddress.setError(null);
+            }
+
+            if (valid) {
+                String id = String.valueOf(System.currentTimeMillis());
+                RegistryObject obj = new RegistryObject(id, name, address, description);
+
+                objectsRef.child(id).setValue(obj)
+                        .addOnSuccessListener(unused -> {
+                            Toast.makeText(this, "Объект добавлен", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            hideKeyboard(etName);
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(this, "Ошибка при добавлении", Toast.LENGTH_SHORT).show();
+                        });
+            }
+        });
+
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+
+    private void hideKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

@@ -1,50 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
 
-    <EditText
-        android:id="@+id/etObjectName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Название объекта" />
-
-    <EditText
-        android:id="@+id/etObjectAddress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Адрес объекта" />
-
-    <EditText
-        android:id="@+id/etObjectDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Описание объекта (необязательно)" />
-
-    <Button
-        android:id="@+id/btnAddObject"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Добавить объект" />
-
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Назад" />
-
+    <!-- Заголовок -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Список объектов:"
-        android:textSize="18sp"
-        android:paddingTop="16dp"/>
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Поисковое поле -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Поиск по названию" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewObjects"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginBottom="12dp" />
+
+    <!-- Кнопка "Добавить объект" -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAddObject"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Добавить объект"
+        app:cornerRadius="12dp" />
 </LinearLayout>

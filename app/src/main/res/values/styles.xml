@@ -1,1 +1,8 @@
-<resources></resources>
+<resources>
+    <style name="DialogButtonStyle">
+        <item name="android:minHeight">72dp</item>  <!-- Фиксированная высота кнопок -->
+        <item name="android:textSize">16sp</item>  <!-- Размер текста -->
+        <item name="android:paddingStart">16dp</item>  <!-- Отступы слева -->
+        <item name="android:paddingEnd">16dp</item>  <!-- Отступы справа -->
+    </style>
+</resources>
