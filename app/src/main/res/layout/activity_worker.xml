@@ -1,26 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:padding="16dp"
+    android:gravity="center_vertical"
+    tools:context=".WorkerActivity">
+
+    <!-- Логин пользователя -->
+    <TextView
+        android:id="@+id/tvUserInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Вы вошли как ..."
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Сообщение при отсутствии задач -->
+    <TextView
+        android:id="@+id/tvNoTasks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Нет новых заявок"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewWorkerTasks"
         android:layout_width="match_parent"
-        android:layout_height="588dp" />
-    <Button
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCompleteTask"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Перейти к активной задаче"
         android:layout_marginTop="16dp"
-        android:visibility="gone"/>
+        app:cornerRadius="12dp"
+        android:visibility="gone"
+        style="@style/Widget.MaterialComponents.Button" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonexit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Выйти" />
+        android:text="Выйти"
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button" />
 </LinearLayout>

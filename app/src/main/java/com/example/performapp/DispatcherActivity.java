@@ -1,8 +1,10 @@
 package com.example.performapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -10,11 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +24,10 @@ public class DispatcherActivity extends AppCompatActivity {
     private final List<Task> taskList = new ArrayList<>();
     private static final String PREF_NAME = "MyAppPrefs";
 
+    private TextView tvDispatcherInfo;
+    private DatabaseReference usersRef;
+    private String currentDispatcherId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +36,13 @@ public class DispatcherActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewTasks);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // При снятии работника просто показываем тост
+        tvDispatcherInfo = findViewById(R.id.tvDispatcherInfo);
+
+        currentDispatcherId = getSharedPreferences(PREF_NAME, MODE_PRIVATE).getString("userId", null);
+        usersRef = FirebaseDatabase.getInstance().getReference("users");
+
+        loadDispatcherLogin(currentDispatcherId);
+
         taskAdapter = new DispatcherTaskAdapter(taskList, task -> {
             Toast.makeText(
                     DispatcherActivity.this,
@@ -61,7 +69,30 @@ public class DispatcherActivity extends AppCompatActivity {
         findViewById(R.id.btnAllTasks).setOnClickListener(v -> {
             startActivity(new Intent(this, DispatcherAllTasksActivity.class));
         });
+    }
 
+    private void loadDispatcherLogin(String userId) {
+        if (userId == null) {
+            tvDispatcherInfo.setText("Вы вошли как [неизвестный пользователь]");
+            return;
+        }
+
+        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                User user = snapshot.getValue(User.class);
+                if (user != null && user.getLogin() != null) {
+                    tvDispatcherInfo.setText("Вы вошли как " + user.getLogin());
+                } else {
+                    tvDispatcherInfo.setText("Вы вошли как [неизвестный пользователь]");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(DispatcherActivity.this, "Ошибка загрузки данных пользователя", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadTasks() {
@@ -81,15 +112,13 @@ public class DispatcherActivity extends AppCompatActivity {
                     String comment        = ds.child("comment").getValue(String.class);
                     String statusStr      = ds.child("status").getValue(String.class);
 
-                    // Подстановка PENDING, если статус пустой или некорректный
                     TaskStatus status = TaskStatus.PENDING;
                     if (statusStr != null && !statusStr.isEmpty()) {
                         try {
                             status = TaskStatus.valueOf(statusStr);
-                        } catch (IllegalArgumentException ignored) { }
+                        } catch (IllegalArgumentException ignored) {}
                     }
 
-                    // ❗ Фильтрация по статусу
                     if (status == TaskStatus.PENDING || status == TaskStatus.ACCEPTED || status == TaskStatus.BOOKED) {
                         Task t = new Task(
                                 id,
@@ -119,5 +148,4 @@ public class DispatcherActivity extends AppCompatActivity {
             }
         });
     }
-
 }

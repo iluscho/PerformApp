@@ -1,52 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:gravity="center_vertical"
+    tools:context=".TaskDetailActivity">
 
+    <!-- Заголовок для времени создания задачи -->
     <TextView
         android:id="@+id/tvTaskDate"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Время создания: "/>
+        android:text="Время создания:"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Заголовок для времени принятия задачи -->
     <TextView
         android:id="@+id/tvAcceptanceDate"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Время принятия: "/>
+        android:text="Время принятия:"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Заголовок для организации -->
     <TextView
         android:id="@+id/tvOrganization"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Объект: "/>
+        android:text="Объект:"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Заголовок для адреса -->
     <TextView
         android:id="@+id/tvAddress"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Адрес: "/>
+        android:text="Адрес:"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Заголовок для комментария -->
     <TextView
         android:id="@+id/tvComment"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Комментарий: "/>
+        android:text="Комментарий:"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp" />
 
-    <Button
+    <!-- Кнопка для открытия карты с использованием Material Design -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnOpenMap"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Открыть карту"/>
+        android:text="Открыть карту"
+        android:layout_marginBottom="16dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button" />
 
-    <Button
+    <!-- Кнопка для завершения задачи с использованием Material Design -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCompleteTask"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Завершить задачу"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button" />
+
 </LinearLayout>

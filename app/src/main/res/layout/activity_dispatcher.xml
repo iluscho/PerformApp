@@ -10,7 +10,17 @@
     android:gravity="center_horizontal"
     tools:context=".DispatcherActivity">
 
-    <!-- Кнопка добавления задачи -->
+    <!-- Имя вошедшего пользователя -->
+    <TextView
+        android:id="@+id/tvDispatcherInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Вы вошли как ..."
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_horizontal" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAddTask"
         android:layout_width="match_parent"
@@ -20,7 +30,6 @@
         app:cornerRadius="12dp"
         style="@style/Widget.MaterialComponents.Button" />
 
-    <!-- RecyclerView для отображения списка задач -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewTasks"
         android:layout_width="match_parent"
@@ -28,7 +37,6 @@
         android:layout_weight="1"
         android:layout_marginBottom="16dp" />
 
-    <!-- Кнопка отображения всех задач -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAllTasks"
         android:layout_width="match_parent"
@@ -38,7 +46,6 @@
         app:cornerRadius="12dp"
         style="@style/Widget.MaterialComponents.Button" />
 
-    <!-- Кнопка перехода к реестру объектов -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnObjectRegistry"
         android:layout_width="match_parent"
@@ -48,7 +55,6 @@
         app:cornerRadius="12dp"
         style="@style/Widget.MaterialComponents.Button" />
 
-    <!-- Кнопка выхода -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttondispexit"
         android:layout_width="match_parent"
