@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FFFFFFFF</color> <!-- Белый текст на тёмном фоне -->
+    <color name="purple_500">#D1A5E7</color> <!-- Более светлый фиолетовый -->
+    <color name="purple_700">#AB47BC</color> <!-- Можно тот же, что был светлым -->
+    <color name="purple_200">#CE93D8</color>
+    <color name="purple_50">#121212</color> <!-- Тёмный фон -->
+    <color name="white">#000000</color> <!-- Чёрный текст на светлом фоне -->
+</resources>
