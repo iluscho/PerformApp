@@ -6,14 +6,36 @@
     android:padding="8dp"
     android:background="@android:color/white">
 
-    <!-- Всегда видимый адрес -->
-    <TextView
-        android:id="@+id/tvAddress"
+    <!-- Контейнер для адреса и таймера в одной строке -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Адрес"
-        android:textStyle="bold"
-        android:textSize="16sp" />
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <!-- Всегда видимый адрес -->
+        <TextView
+            android:id="@+id/tvAddress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Адрес"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_weight="0.8" />
+
+        <!-- Таймер, который будет показывать время с момента создания задачи -->
+        <TextView
+            android:id="@+id/tvTimer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_red_dark"
+            android:layout_weight="0.2"
+            android:gravity="end"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
 
     <!-- Скрытый блок подробностей -->
     <LinearLayout
@@ -24,13 +46,40 @@
         android:visibility="gone"
         android:paddingTop="8dp">
 
-        <TextView android:id="@+id/tvOrganization" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-        <TextView android:id="@+id/tvWorker" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-        <TextView android:id="@+id/tvStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-        <TextView android:id="@+id/tvTaskDate" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-        <TextView android:id="@+id/tvAcceptanceDate" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-        <TextView android:id="@+id/tvCompletionDate" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-        <TextView android:id="@+id/tvComment" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/tvOrganization"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvWorker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvTaskDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvAcceptanceDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvCompletionDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <Button
             android:id="@+id/btnRemoveWorker"

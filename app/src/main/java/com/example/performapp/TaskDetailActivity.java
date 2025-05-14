@@ -6,15 +6,17 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.widget.Toast;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
+import java.util.TimeZone;
 
 public class TaskDetailActivity extends AppCompatActivity {
     private TextView tvAddress, tvComment, tvTaskDate, tvAcceptanceDate, tvOrganization;
@@ -58,12 +60,22 @@ public class TaskDetailActivity extends AppCompatActivity {
                     }
                 }
             });
+
             btnCompleteTask.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (task != null) {
-                        // Установка даты и времени завершения
-                        String completionDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                        // Получаем текущий часовой пояс устройства
+                        TimeZone timeZone = TimeZone.getDefault();
+
+                        // Создаем объект SimpleDateFormat, который будет учитывать часовой пояс
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                        sdf.setTimeZone(timeZone);  // Устанавливаем часовой пояс
+
+                        // Формируем дату и время завершения с учетом часового пояса
+                        String completionDate = sdf.format(new Date());
+
+                        // Устанавливаем дату завершения и статус
                         task.setCompletionDate(completionDate);
                         task.setStatus(TaskStatus.COMPLETED); // Если у тебя есть статус COMPLETED
 
@@ -79,7 +91,6 @@ public class TaskDetailActivity extends AppCompatActivity {
                     }
                 }
             });
-
         }
     }
 }

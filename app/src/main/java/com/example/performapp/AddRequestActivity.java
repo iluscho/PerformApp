@@ -11,17 +11,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.DataSnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class AddRequestActivity extends AppCompatActivity {
 
@@ -76,7 +77,6 @@ public class AddRequestActivity extends AppCompatActivity {
         btnAddRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 RegistryObject selectedObject = (RegistryObject) spinnerRegistry.getSelectedItem();
                 if (selectedObject == null) {
                     Toast.makeText(AddRequestActivity.this, "Выберите объект из реестра", Toast.LENGTH_SHORT).show();
@@ -84,21 +84,25 @@ public class AddRequestActivity extends AppCompatActivity {
                 }
 
                 String comment = etComment.getText().toString().trim();
-                // Здесь можно добавить валидацию комментария, если требуется
 
-                // Формирование новой заявки (Task) с использованием данных выбранного объекта
                 String taskId = String.valueOf(System.currentTimeMillis());
 
-                String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                // Получаем текущий часовой пояс устройства
+                TimeZone timeZone = TimeZone.getDefault();
 
-                String taskDate = currentDate; // Можно заменить на текущую дату
+                // Создаем объект SimpleDateFormat, который будет учитывать часовой пояс
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                sdf.setTimeZone(timeZone);  // Устанавливаем часовой пояс
+
+                // Формируем текущую дату и время с учетом часового пояса
+                String taskDate = sdf.format(new Date());
+
                 String acceptanceDate = "";
                 String address = selectedObject.getAddress();
-                String organization = selectedObject.getName(); // Или другое поле, если нужно
+                String organization = selectedObject.getName();
 
                 Task newTask = new Task(taskId, taskDate, acceptanceDate, address, comment, organization, TaskStatus.PENDING);
 
-                // Сохраняем заявку в базе (узел "tasks")
                 tasksRef.child(taskId).setValue(newTask, new DatabaseReference.CompletionListener() {
                     @Override
                     public void onComplete(DatabaseError error, @NonNull DatabaseReference ref) {
@@ -106,7 +110,7 @@ public class AddRequestActivity extends AppCompatActivity {
                             Toast.makeText(AddRequestActivity.this, "Ошибка добавления заявки", Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(AddRequestActivity.this, "Заявка успешно добавлена", Toast.LENGTH_SHORT).show();
-                            finish(); // Закрываем активность после успешного добавления
+                            finish();
                         }
                     }
                 });

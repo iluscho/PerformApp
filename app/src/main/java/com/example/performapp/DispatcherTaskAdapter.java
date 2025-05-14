@@ -1,5 +1,6 @@
 package com.example.performapp;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,13 +16,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAdapter.DispatcherViewHolder> {
     private final List<Task> taskList;
     private final OnRemoveWorkerClickListener listener;
+
     public interface OnRemoveWorkerClickListener {
         void onRemoveWorkerClicked(Task task);
     }
@@ -31,7 +36,8 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
         this.listener = listener;
     }
 
-    @NonNull @Override
+    @NonNull
+    @Override
     public DispatcherViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_task_dispatcher, parent, false);
@@ -50,22 +56,25 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
 
     class DispatcherViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvAddress, tvOrganization, tvWorker, tvStatus,
-                tvTaskDate, tvAcceptanceDate, tvCompletionDate, tvComment;
+                tvTaskDate, tvAcceptanceDate, tvCompletionDate, tvComment, tvTimer;
         private final Button btnRemoveWorker, btnCancelTask;
         private final LinearLayout detailsContainer;
 
+        private final Handler timerHandler = new Handler();
+        private Runnable timerRunnable;
 
         public DispatcherViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvAddress        = itemView.findViewById(R.id.tvAddress);
-            tvOrganization   = itemView.findViewById(R.id.tvOrganization);
-            tvWorker         = itemView.findViewById(R.id.tvWorker);
-            tvStatus         = itemView.findViewById(R.id.tvStatus);
-            tvTaskDate       = itemView.findViewById(R.id.tvTaskDate);
+            tvAddress = itemView.findViewById(R.id.tvAddress);
+            tvOrganization = itemView.findViewById(R.id.tvOrganization);
+            tvWorker = itemView.findViewById(R.id.tvWorker);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            tvTaskDate = itemView.findViewById(R.id.tvTaskDate);
             tvAcceptanceDate = itemView.findViewById(R.id.tvAcceptanceDate);
             tvCompletionDate = itemView.findViewById(R.id.tvCompletionDate);
-            tvComment        = itemView.findViewById(R.id.tvComment);
-            btnRemoveWorker  = itemView.findViewById(R.id.btnRemoveWorker);
+            tvComment = itemView.findViewById(R.id.tvComment);
+            tvTimer = itemView.findViewById(R.id.tvTimer);
+            btnRemoveWorker = itemView.findViewById(R.id.btnRemoveWorker);
             btnCancelTask = itemView.findViewById(R.id.btnCancelTask);
             detailsContainer = itemView.findViewById(R.id.detailsContainer);
 
@@ -92,6 +101,9 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
             tvCompletionDate.setText("Завершено: " + task.getCompletionDate());
             tvComment.setText("Комментарий: " + task.getComment());
 
+            // Запуск секундомера
+            startTimer(task.getTaskDate());
+
             boolean canRemove = (status == TaskStatus.ACCEPTED || status == TaskStatus.BOOKED)
                     && !wn.isEmpty();
             btnRemoveWorker.setEnabled(canRemove);
@@ -107,8 +119,8 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
             } else {
                 btnCancelTask.setVisibility(View.GONE);
             }
-
         }
+
         private void cancelTask(Task task, View anchor) {
             DatabaseReference ref = FirebaseDatabase.getInstance()
                     .getReference("tasks")
@@ -127,7 +139,6 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
                 }
             });
         }
-
 
         private void updateWorkerAndStatus(Task task, View anchor) {
             DatabaseReference ref = FirebaseDatabase
@@ -157,6 +168,52 @@ public class DispatcherTaskAdapter extends RecyclerView.Adapter<DispatcherTaskAd
                     ).show();
                 }
             });
+        }
+
+        // Метод для запуска секундомера
+        private void startTimer(String taskDateTime) {
+            if (tvTimer == null) {
+                Log.e("DispatcherTaskAdapter", "tvTimer is null");
+                return;
+            }
+
+            // Останавливаем старый таймер, если он существует
+            if (timerRunnable != null) {
+                timerHandler.removeCallbacks(timerRunnable);
+            }
+
+            timerRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                        Date taskTime = sdf.parse(taskDateTime);
+                        long diffMillis = new Date().getTime() - taskTime.getTime();
+
+                        long seconds = (diffMillis / 1000) % 60;
+                        long minutes = (diffMillis / (1000 * 60)) % 60;
+                        long hours = (diffMillis / (1000 * 60 * 60));
+
+                        String time = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+                        tvTimer.setText(time);
+                    } catch (Exception e) {
+                        tvTimer.setText("??:??:??");
+                    }
+
+                    timerHandler.postDelayed(this, 1000); // обновляем каждую секунду
+                }
+            };
+
+            // Запуск таймера
+            timerHandler.post(timerRunnable);
+        }
+
+
+        // Останавливаем секундомер при уничтожении ViewHolder
+        @Override
+        protected void finalize() throws Throwable {
+            super.finalize();
+            timerHandler.removeCallbacks(timerRunnable);
         }
     }
 }
