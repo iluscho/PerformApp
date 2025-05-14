@@ -56,6 +56,15 @@
         style="@style/Widget.MaterialComponents.Button" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnWorkerList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Список работников"
+        android:layout_marginBottom="8dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttondispexit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,6 +70,12 @@ public class DispatcherActivity extends AppCompatActivity {
         findViewById(R.id.btnAllTasks).setOnClickListener(v -> {
             startActivity(new Intent(this, DispatcherAllTasksActivity.class));
         });
+        Button btnWorkerList = findViewById(R.id.btnWorkerList);
+        btnWorkerList.setOnClickListener(v -> {
+            Intent intent = new Intent(DispatcherActivity.this, WorkerListActivity.class);
+            startActivity(intent);
+        });
+
     }
 
     private void loadDispatcherLogin(String userId) {
