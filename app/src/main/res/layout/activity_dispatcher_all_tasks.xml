@@ -52,7 +52,8 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:minWidth="0dp"
-            android:minEms="5" />
+            android:minEms="5"
+            android:fitsSystemWindows="true"/>
     </LinearLayout>
 
     <TextView
