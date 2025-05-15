@@ -39,4 +39,13 @@
         android:text="Применить фильтры"
         android:layout_marginTop="16dp"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+    <Button
+        android:id="@+id/btnSort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Сортировать: новые сверху"
+        android:layout_marginTop="12dp"
+        style="@style/Widget.MaterialComponents.Button"/>
+
 </LinearLayout>

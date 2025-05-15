@@ -24,6 +24,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -39,6 +41,8 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
     private List<String> allWorkers = new ArrayList<>();
     private TextInputEditText dateRangeEditText;
     private TextView textViewNoTasks;
+
+    private boolean sortDescending = true; // true - новые сверху, false - старые сверху
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +108,7 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         dateRangeEditText = dialogView.findViewById(R.id.dateEditText);
         Spinner workerSpinner = dialogView.findViewById(R.id.workerSpinner);
         Button btnApply = dialogView.findViewById(R.id.btnApplyFilters);
+        Button btnSort = dialogView.findViewById(R.id.btnSort);
 
         MaterialDatePicker<androidx.core.util.Pair<Long, Long>> datePicker =
                 MaterialDatePicker.Builder.dateRangePicker()
@@ -124,6 +129,18 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         workerSpinner.setAdapter(adapter);
 
+        // Устанавливаем текущие фильтры в диалог
+        if (filterStartDate != null && filterEndDate != null) {
+            dateRangeEditText.setText(filterStartDate + " - " + filterEndDate);
+        }
+        if (filterWorker != null) {
+            int pos = allWorkers.indexOf(filterWorker);
+            if (pos >= 0) workerSpinner.setSelection(pos);
+        }
+
+        // Текст кнопки сортировки в зависимости от текущего состояния
+        btnSort.setText(sortDescending ? "Сортировать: новые сверху" : "Сортировать: старые сверху");
+
         AlertDialog dialog = builder.create();
         dialog.show();
 
@@ -142,6 +159,12 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             if ("Все".equals(filterWorker)) filterWorker = null;
 
             dialog.dismiss();
+            applyFilters();
+        });
+
+        btnSort.setOnClickListener(v -> {
+            sortDescending = !sortDescending;
+            btnSort.setText(sortDescending ? "Сортировать: новые сверху" : "Сортировать: старые сверху");
             applyFilters();
         });
     }
@@ -192,6 +215,18 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                     t.setCompletionDate(completionDate != null ? completionDate : "");
                     taskList.add(t);
                 }
+
+                // Сортируем задачи по дате в зависимости от sortDescending
+                Collections.sort(taskList, new Comparator<Task>() {
+                    @Override
+                    public int compare(Task t1, Task t2) {
+                        // сравниваем даты в формате yyyy-MM-dd
+                        return sortDescending ?
+                                t2.getTaskDate().compareTo(t1.getTaskDate()) :
+                                t1.getTaskDate().compareTo(t2.getTaskDate());
+                    }
+                });
+
                 taskAdapter.notifyDataSetChanged();
                 updateNoTasksMessage();
             }
@@ -238,6 +273,16 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                     t.setCompletionDate(completionDate != null ? completionDate : "");
                     taskList.add(t);
                 }
+
+                Collections.sort(taskList, new Comparator<Task>() {
+                    @Override
+                    public int compare(Task t1, Task t2) {
+                        return sortDescending ?
+                                t2.getTaskDate().compareTo(t1.getTaskDate()) :
+                                t1.getTaskDate().compareTo(t2.getTaskDate());
+                    }
+                });
+
                 taskAdapter.notifyDataSetChanged();
                 updateNoTasksMessage();
             }
