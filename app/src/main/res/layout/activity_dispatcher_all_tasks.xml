@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Заголовок "Все задачи" -->
     <TextView
         android:text="Все задачи"
         android:textSize="20sp"
@@ -17,7 +16,6 @@
         android:gravity="center"
         android:padding="8dp"/>
 
-    <!-- Горизонтальный LinearLayout для кнопок -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -39,21 +37,6 @@
             android:maxLines="1"
             android:minWidth="0dp"
             android:minEms="5" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnClearFilters"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Сброс фильтров"
-            app:cornerRadius="8dp"
-            android:layout_marginStart="8dp"
-            style="@style/Widget.MaterialComponents.Button"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:minWidth="0dp"
-            android:minEms="5"
-            android:fitsSystemWindows="true"/>
     </LinearLayout>
 
     <TextView
@@ -67,7 +50,6 @@
         android:padding="16dp"
         android:textColor="@android:color/black"/>
 
-    <!-- RecyclerView для отображения списка задач -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewAllTasks"
         android:layout_width="match_parent"

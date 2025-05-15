@@ -41,8 +41,7 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
     private List<String> allWorkers = new ArrayList<>();
     private TextInputEditText dateRangeEditText;
     private TextView textViewNoTasks;
-
-    private boolean sortDescending = true; // true - новые сверху, false - старые сверху
+    private boolean sortDescending = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +49,6 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dispatcher_all_tasks);
 
         textViewNoTasks = findViewById(R.id.textViewNoTasks);
-
-        findViewById(R.id.btnClearFilters).setOnClickListener(v -> {
-            filterStartDate = null;
-            filterEndDate = null;
-            filterWorker = null;
-            loadAllTasks();
-        });
 
         recyclerView = findViewById(R.id.recyclerViewAllTasks);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -71,7 +63,6 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             loadWorkers(this::showFilterDialog);
         });
 
-        // Изначально загружаем все задачи без фильтров
         loadAllTasks();
     }
 
@@ -108,6 +99,7 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         dateRangeEditText = dialogView.findViewById(R.id.dateEditText);
         Spinner workerSpinner = dialogView.findViewById(R.id.workerSpinner);
         Button btnApply = dialogView.findViewById(R.id.btnApplyFilters);
+        Button btnClear = dialogView.findViewById(R.id.btnClearFilters);
         Button btnSort = dialogView.findViewById(R.id.btnSort);
 
         MaterialDatePicker<androidx.core.util.Pair<Long, Long>> datePicker =
@@ -129,7 +121,6 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         workerSpinner.setAdapter(adapter);
 
-        // Устанавливаем текущие фильтры в диалог
         if (filterStartDate != null && filterEndDate != null) {
             dateRangeEditText.setText(filterStartDate + " - " + filterEndDate);
         }
@@ -138,11 +129,19 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             if (pos >= 0) workerSpinner.setSelection(pos);
         }
 
-        // Текст кнопки сортировки в зависимости от текущего состояния
         btnSort.setText(sortDescending ? "Сортировать: новые сверху" : "Сортировать: старые сверху");
 
         AlertDialog dialog = builder.create();
-        dialog.show();
+
+        btnClear.setOnClickListener(v -> {
+            filterStartDate = null;
+            filterEndDate = null;
+            filterWorker = null;
+            dateRangeEditText.setText("");
+            workerSpinner.setSelection(0);
+            dialog.dismiss();
+            applyFilters();
+        });
 
         btnApply.setOnClickListener(v -> {
             String dateRange = dateRangeEditText.getText().toString().trim();
@@ -167,6 +166,8 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             btnSort.setText(sortDescending ? "Сортировать: новые сверху" : "Сортировать: старые сверху");
             applyFilters();
         });
+
+        dialog.show();
     }
 
     private void applyFilters() {
@@ -216,16 +217,9 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                     taskList.add(t);
                 }
 
-                // Сортируем задачи по дате в зависимости от sortDescending
-                Collections.sort(taskList, new Comparator<Task>() {
-                    @Override
-                    public int compare(Task t1, Task t2) {
-                        // сравниваем даты в формате yyyy-MM-dd
-                        return sortDescending ?
-                                t2.getTaskDate().compareTo(t1.getTaskDate()) :
-                                t1.getTaskDate().compareTo(t2.getTaskDate());
-                    }
-                });
+                Collections.sort(taskList, (t1, t2) -> sortDescending ?
+                        t2.getTaskDate().compareTo(t1.getTaskDate()) :
+                        t1.getTaskDate().compareTo(t2.getTaskDate()));
 
                 taskAdapter.notifyDataSetChanged();
                 updateNoTasksMessage();
@@ -274,14 +268,9 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                     taskList.add(t);
                 }
 
-                Collections.sort(taskList, new Comparator<Task>() {
-                    @Override
-                    public int compare(Task t1, Task t2) {
-                        return sortDescending ?
-                                t2.getTaskDate().compareTo(t1.getTaskDate()) :
-                                t1.getTaskDate().compareTo(t2.getTaskDate());
-                    }
-                });
+                Collections.sort(taskList, (t1, t2) -> sortDescending ?
+                        t2.getTaskDate().compareTo(t1.getTaskDate()) :
+                        t1.getTaskDate().compareTo(t2.getTaskDate()));
 
                 taskAdapter.notifyDataSetChanged();
                 updateNoTasksMessage();
@@ -313,7 +302,7 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                 filtersInfo.append("Нет");
             }
 
-            textViewNoTasks.setText("Задачи не найдены.\n" + filtersInfo.toString());
+            textViewNoTasks.setText("Задачи не найдены.\n" + filtersInfo);
             textViewNoTasks.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
         } else {
