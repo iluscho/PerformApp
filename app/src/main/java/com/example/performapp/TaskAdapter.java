@@ -48,7 +48,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     }
 
     class TaskViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvAddress, tvComment, tvTimer, tvBookedBy;
+        private TextView tvObjectName, tvAddress, tvComment, tvTimer, tvBookedBy;
         private Button btnAccept, btnBook;
 
         private Handler handler = new Handler();
@@ -56,35 +56,38 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
         public TaskViewHolder(View itemView) {
             super(itemView);
+            tvObjectName = itemView.findViewById(R.id.tvObjectName);
             tvAddress = itemView.findViewById(R.id.tvItemAddress);
             tvComment = itemView.findViewById(R.id.tvItemComment);
             tvTimer = itemView.findViewById(R.id.tvTimer);
-            tvBookedBy = itemView.findViewById(R.id.tvBookedBy); // новый элемент
+            tvBookedBy = itemView.findViewById(R.id.tvBookedBy);
             btnAccept = itemView.findViewById(R.id.btnAccept);
             btnBook = itemView.findViewById(R.id.btnBook);
         }
 
         public void bind(final Task task) {
-            tvAddress.setText(task.getAddress());
-            tvComment.setText(task.getComment());
+            // Название объекта вместо "Адрес" сверху
+            tvObjectName.setText(task.getOrganization());
 
-            // ✅ Отображение текста "Забронировано: ..."
+            // Адрес и комментарий остаются без изменений
+            tvAddress.setText("Адрес: " + task.getAddress());
+            tvComment.setText("Комментарий: " + task.getComment());
+
+            // Отображение текста "Забронировано: ..."
             if (task.getStatus() == TaskStatus.BOOKED && task.getWorkerName() != null && !task.getWorkerName().isEmpty()) {
                 tvBookedBy.setVisibility(View.VISIBLE);
                 tvBookedBy.setText("Забронировано: " + task.getWorkerName());
 
                 if (task.getWorkerName().equals(currentWorkerLogin)) {
-                    // красный цвет — если забронировал текущий пользователь
                     tvBookedBy.setTextColor(itemView.getContext().getResources().getColor(android.R.color.holo_red_dark));
                 } else {
-                    // серый цвет — если забронировал кто-то другой
                     tvBookedBy.setTextColor(itemView.getContext().getResources().getColor(android.R.color.darker_gray));
                 }
             } else {
                 tvBookedBy.setVisibility(View.GONE);
             }
 
-            // ⏱ Таймер
+            // Таймер
             final long startTime = parseDateToMillis(task.getTaskDate());
 
             if (updateTimerRunnable != null) {
@@ -111,7 +114,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             btnAccept.setOnClickListener(v -> listener.onAcceptClicked(task));
             btnBook.setOnClickListener(v -> listener.onBookClicked(task));
         }
-
 
         public void stopTimer() {
             handler.removeCallbacks(updateTimerRunnable);

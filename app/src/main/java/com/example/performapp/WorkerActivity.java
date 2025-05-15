@@ -156,23 +156,53 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
 
     @Override
     public void onAcceptClicked(Task task) {
-        task.setStatus(TaskStatus.ACCEPTED);
-        String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-        task.setAcceptanceDate(dateTime);
-        task.setWorkerName(currentWorkerLogin);
+        tasksRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                boolean hasAcceptedTask = false;
 
-        tasksRef.child(task.getId()).setValue(task)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Задача принята", Toast.LENGTH_SHORT).show();
-                    taskList.remove(task);
-                    taskAdapter.notifyDataSetChanged();
-                    checkForActiveTask(findViewById(R.id.btnCompleteTask));
-                    Intent intent = new Intent(this, TaskDetailActivity.class);
-                    intent.putExtra("task", task);
-                    startActivity(intent);
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Ошибка обновления", Toast.LENGTH_SHORT).show());
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Task existingTask = ds.getValue(Task.class);
+                    if (existingTask != null &&
+                            existingTask.getStatus() == TaskStatus.ACCEPTED &&
+                            currentWorkerLogin.equals(existingTask.getWorkerName()) &&
+                            (existingTask.getCompletionDate() == null || existingTask.getCompletionDate().isEmpty())) {
+                        hasAcceptedTask = true;
+                        break;
+                    }
+                }
+
+                if (hasAcceptedTask) {
+                    Toast.makeText(WorkerActivity.this, "Вы уже приняли задачу. Завершите её перед принятием новой.", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Принятие задачи
+                    task.setStatus(TaskStatus.ACCEPTED);
+                    String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                    task.setAcceptanceDate(dateTime);
+                    task.setWorkerName(currentWorkerLogin);
+
+                    tasksRef.child(task.getId()).setValue(task)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(WorkerActivity.this, "Задача принята", Toast.LENGTH_SHORT).show();
+                                taskList.remove(task);
+                                taskAdapter.notifyDataSetChanged();
+                                checkForActiveTask(findViewById(R.id.btnCompleteTask));
+                                Intent intent = new Intent(WorkerActivity.this, TaskDetailActivity.class);
+                                intent.putExtra("task", task);
+                                startActivity(intent);
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(WorkerActivity.this, "Ошибка обновления", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(WorkerActivity.this, "Ошибка проверки задач", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+
 
     @Override
     public void onBookClicked(Task task) {

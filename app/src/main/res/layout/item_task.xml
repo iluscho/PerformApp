@@ -22,15 +22,16 @@
             android:gravity="right"
             android:layout_marginBottom="4dp">
 
-            <!-- Адрес -->
+            <!-- Название объекта вместо "Адрес" -->
             <TextView
-                android:id="@+id/tvAddress"
+                android:id="@+id/tvObjectName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Адрес"
+                android:text="Название объекта"
                 android:textStyle="bold"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="@color/black" />
 
             <!-- Секундомер -->
             <TextView
@@ -42,6 +43,7 @@
                 android:textColor="@android:color/holo_red_dark" />
         </LinearLayout>
 
+        <!-- Адрес -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvItemAddress"
             android:layout_width="match_parent"
@@ -52,6 +54,7 @@
             android:textColor="@color/black"
             android:layout_marginBottom="8dp" />
 
+        <!-- Комментарий -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvItemComment"
             android:layout_width="match_parent"
