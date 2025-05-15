@@ -26,10 +26,12 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
     private DatabaseReference tasksRef;
     private DatabaseReference usersRef;
     private String currentWorkerId;
+    private String currentWorkerLogin;
     private static final String PREF_NAME = "MyAppPrefs";
 
     private TextView tvUserInfo;
     private TextView tvNoTasks;
+    private Button btnActiveTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +40,7 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
 
         tvUserInfo = findViewById(R.id.tvUserInfo);
         tvNoTasks = findViewById(R.id.tvNoTasks);
-
-        Button btnActiveTask = findViewById(R.id.btnCompleteTask);
+        btnActiveTask = findViewById(R.id.btnCompleteTask);
         btnActiveTask.setVisibility(View.GONE);
 
         currentWorkerId = getIntent().getStringExtra("userId");
@@ -49,8 +50,6 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
 
         recyclerView = findViewById(R.id.recyclerViewWorkerTasks);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        taskAdapter = new TaskAdapter(taskList, this);
-        recyclerView.setAdapter(taskAdapter);
 
         Button buttonExit = findViewById(R.id.buttonexit);
         buttonExit.setOnClickListener(v -> {
@@ -62,7 +61,6 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
 
         loadWorkerLogin(currentWorkerId);
         loadTasks();
-        checkForActiveTask(btnActiveTask);
     }
 
     private void loadWorkerLogin(String userId) {
@@ -71,10 +69,17 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User user = snapshot.getValue(User.class);
                 if (user != null && user.getLogin() != null) {
-                    tvUserInfo.setText("Вы вошли как " + user.getLogin());
+                    currentWorkerLogin = user.getLogin();
+                    tvUserInfo.setText("Вы вошли как " + currentWorkerLogin);
                 } else {
+                    currentWorkerLogin = "неизвестный";
                     tvUserInfo.setText("Вы вошли как [неизвестный пользователь]");
                 }
+
+                // ✅ Создаем адаптер только после загрузки логина
+                taskAdapter = new TaskAdapter(taskList, WorkerActivity.this, currentWorkerLogin);
+                recyclerView.setAdapter(taskAdapter);
+                checkForActiveTask(btnActiveTask);
             }
 
             @Override
@@ -97,13 +102,11 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
                     }
                 }
 
-                if (taskList.isEmpty()) {
-                    tvNoTasks.setVisibility(View.VISIBLE);
-                } else {
-                    tvNoTasks.setVisibility(View.GONE);
+                if (taskAdapter != null) {
+                    taskAdapter.notifyDataSetChanged();
                 }
 
-                taskAdapter.notifyDataSetChanged();
+                tvNoTasks.setVisibility(taskList.isEmpty() ? View.VISIBLE : View.GONE);
             }
 
             @Override
@@ -123,7 +126,8 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
                     Task task = ds.getValue(Task.class);
                     if (task != null &&
                             task.getStatus() == TaskStatus.ACCEPTED &&
-                            currentWorkerId.equals(task.getWorkerName()) &&
+                            currentWorkerLogin != null &&
+                            currentWorkerLogin.equals(task.getWorkerName()) &&
                             (task.getCompletionDate() == null || task.getCompletionDate().isEmpty())) {
                         activeTask = task;
                         break;
@@ -155,7 +159,7 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
         task.setStatus(TaskStatus.ACCEPTED);
         String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
         task.setAcceptanceDate(dateTime);
-        task.setWorkerName(currentWorkerId);
+        task.setWorkerName(currentWorkerLogin);
 
         tasksRef.child(task.getId()).setValue(task)
                 .addOnSuccessListener(aVoid -> {
@@ -173,7 +177,7 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
     @Override
     public void onBookClicked(Task task) {
         task.setStatus(TaskStatus.BOOKED);
-        task.setWorkerName(currentWorkerId);
+        task.setWorkerName(currentWorkerLogin);
 
         tasksRef.child(task.getId()).setValue(task)
                 .addOnSuccessListener(aVoid -> {

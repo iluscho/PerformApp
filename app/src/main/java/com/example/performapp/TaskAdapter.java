@@ -18,15 +18,17 @@ import java.util.Locale;
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
     private List<Task> tasks;
     private TaskItemListener listener;
+    private String currentWorkerLogin;
 
     public interface TaskItemListener {
         void onAcceptClicked(Task task);
         void onBookClicked(Task task);
     }
 
-    public TaskAdapter(List<Task> tasks, TaskItemListener listener) {
+    public TaskAdapter(List<Task> tasks, TaskItemListener listener, String currentWorkerLogin) {
         this.tasks = tasks;
         this.listener = listener;
+        this.currentWorkerLogin = currentWorkerLogin;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     }
 
     class TaskViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvAddress, tvComment, tvTimer;
+        private TextView tvAddress, tvComment, tvTimer, tvBookedBy;
         private Button btnAccept, btnBook;
 
         private Handler handler = new Handler();
@@ -57,6 +59,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             tvAddress = itemView.findViewById(R.id.tvItemAddress);
             tvComment = itemView.findViewById(R.id.tvItemComment);
             tvTimer = itemView.findViewById(R.id.tvTimer);
+            tvBookedBy = itemView.findViewById(R.id.tvBookedBy); // новый элемент
             btnAccept = itemView.findViewById(R.id.btnAccept);
             btnBook = itemView.findViewById(R.id.btnBook);
         }
@@ -65,79 +68,68 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             tvAddress.setText(task.getAddress());
             tvComment.setText(task.getComment());
 
-            // Преобразуем taskDate в миллисекунды
-            final long startTime = parseDateToMillis(task.getTaskDate());
+            // ✅ Отображение текста "Забронировано: ..."
+            if (task.getStatus() == TaskStatus.BOOKED && task.getWorkerName() != null && !task.getWorkerName().isEmpty()) {
+                tvBookedBy.setVisibility(View.VISIBLE);
+                tvBookedBy.setText("Забронировано: " + task.getWorkerName());
 
-            // Запускаем таймер сразу после того, как привязаны данные
-            if (updateTimerRunnable == null) {
-                updateTimerRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        long currentTimeMillis = System.currentTimeMillis(); // текущее время с учетом часового пояса
-                        long elapsedMillis = currentTimeMillis - startTime;  // разница в миллисекундах
-
-                        if (elapsedMillis < 0) {
-                            // Если elapsedMillis меньше нуля, значит время taskDate в будущем, показываем 00:00:00
-                            tvTimer.setText("00:00:00");
-                        } else {
-                            int seconds = (int) (elapsedMillis / 1000) % 60;
-                            int minutes = (int) (elapsedMillis / (1000 * 60)) % 60;
-                            int hours = (int) (elapsedMillis / (1000 * 60 * 60)) % 24;
-
-                            String timerText = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-                            tvTimer.setText(timerText);
-                        }
-
-                        // Повторное обновление через 1 секунду
-                        handler.postDelayed(this, 1000);
-                    }
-                };
+                if (task.getWorkerName().equals(currentWorkerLogin)) {
+                    // красный цвет — если забронировал текущий пользователь
+                    tvBookedBy.setTextColor(itemView.getContext().getResources().getColor(android.R.color.holo_red_dark));
+                } else {
+                    // серый цвет — если забронировал кто-то другой
+                    tvBookedBy.setTextColor(itemView.getContext().getResources().getColor(android.R.color.darker_gray));
+                }
+            } else {
+                tvBookedBy.setVisibility(View.GONE);
             }
 
+            // ⏱ Таймер
+            final long startTime = parseDateToMillis(task.getTaskDate());
+
+            if (updateTimerRunnable != null) {
+                handler.removeCallbacks(updateTimerRunnable);
+            }
+
+            updateTimerRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    long elapsedMillis = System.currentTimeMillis() - startTime;
+                    int seconds = (int) (elapsedMillis / 1000) % 60;
+                    int minutes = (int) ((elapsedMillis / (1000 * 60)) % 60);
+                    int hours = (int) ((elapsedMillis / (1000 * 60 * 60)));
+
+                    String time = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+                    tvTimer.setText(time);
+
+                    handler.postDelayed(this, 1000);
+                }
+            };
             handler.post(updateTimerRunnable);
 
-            btnAccept.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (listener != null) {
-                        listener.onAcceptClicked(task);
-                    }
-                }
-            });
-
-            btnBook.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (listener != null) {
-                        listener.onBookClicked(task);
-                    }
-                }
-            });
+            // Кнопки
+            btnAccept.setOnClickListener(v -> listener.onAcceptClicked(task));
+            btnBook.setOnClickListener(v -> listener.onBookClicked(task));
         }
 
 
-        // Остановить таймер, если задача удалена или завершена
         public void stopTimer() {
             handler.removeCallbacks(updateTimerRunnable);
         }
 
-        // Метод для преобразования строки времени в миллисекунды с учетом часового пояса
-        // Метод для преобразования строки времени в миллисекунды с учетом часового пояса
         private long parseDateToMillis(String taskDate) {
             if (taskDate == null || taskDate.isEmpty()) {
-                return System.currentTimeMillis(); // Если taskDate пустое, используем текущее время
+                return System.currentTimeMillis();
             }
 
-            // Используем правильный формат, соответствующий формату даты в базе данных
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
             try {
-                Date date = sdf.parse(taskDate);  // Преобразуем строку в объект Date
-                return date != null ? date.getTime() : System.currentTimeMillis();  // Если парсинг успешен, возвращаем время, иначе текущее
+                Date date = sdf.parse(taskDate);
+                return date != null ? date.getTime() : System.currentTimeMillis();
             } catch (ParseException e) {
                 e.printStackTrace();
-                return System.currentTimeMillis();  // Если ошибка, используем текущее время
+                return System.currentTimeMillis();
             }
         }
-
     }
 }
