@@ -55,6 +55,17 @@
             android:minEms="5" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/textViewNoTasks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Задачи не найдены"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="16dp"
+        android:textColor="@android:color/black"/>
+
     <!-- RecyclerView для отображения списка задач -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewAllTasks"

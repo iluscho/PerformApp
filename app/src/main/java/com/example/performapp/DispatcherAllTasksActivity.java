@@ -1,11 +1,11 @@
 package com.example.performapp;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -38,11 +38,14 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
     private String filterWorker = null;
     private List<String> allWorkers = new ArrayList<>();
     private TextInputEditText dateRangeEditText;
+    private TextView textViewNoTasks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dispatcher_all_tasks);
+
+        textViewNoTasks = findViewById(R.id.textViewNoTasks);
 
         findViewById(R.id.btnClearFilters).setOnClickListener(v -> {
             filterStartDate = null;
@@ -58,23 +61,31 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             Toast.makeText(this, "Работник снят", Toast.LENGTH_SHORT).show();
         });
 
-        findViewById(R.id.btnFilter).setOnClickListener(v -> showFilterDialog());
-
-        loadWorkers();
         recyclerView.setAdapter(taskAdapter);
+
+        findViewById(R.id.btnFilter).setOnClickListener(v -> {
+            loadWorkers(this::showFilterDialog);
+        });
+
+        // Изначально загружаем все задачи без фильтров
         loadAllTasks();
     }
 
-    private void loadWorkers() {
+    private void loadWorkers(Runnable onWorkersLoaded) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
-        ref.orderByChild("role").equalTo("worker").addListenerForSingleValueEvent(new ValueEventListener() {
+        ref.orderByChild("dispatcher").equalTo(false).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 allWorkers.clear();
                 allWorkers.add("Все");
                 for (DataSnapshot ds : snapshot.getChildren()) {
-                    String name = ds.child("name").getValue(String.class);
-                    if (name != null) allWorkers.add(name);
+                    String login = ds.child("login").getValue(String.class);
+                    if (login != null && !login.isEmpty()) {
+                        allWorkers.add(login);
+                    }
+                }
+                if (onWorkersLoaded != null) {
+                    onWorkersLoaded.run();
                 }
             }
 
@@ -94,7 +105,6 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
         Spinner workerSpinner = dialogView.findViewById(R.id.workerSpinner);
         Button btnApply = dialogView.findViewById(R.id.btnApplyFilters);
 
-        // Настройка Material Date Picker для выбора диапазона
         MaterialDatePicker<androidx.core.util.Pair<Long, Long>> datePicker =
                 MaterialDatePicker.Builder.dateRangePicker()
                         .setTitleText("Выберите период")
@@ -106,10 +116,11 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             String startDate = sdf.format(new Date(selection.first));
             String endDate = sdf.format(new Date(selection.second));
-            dateRangeEditText.setText(String.format("%s - %s", startDate, endDate));
+            dateRangeEditText.setText(startDate + " - " + endDate);
         });
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, allWorkers);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, allWorkers);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         workerSpinner.setAdapter(adapter);
 
@@ -152,14 +163,6 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                     String completionDate = ds.child("completionDate").getValue(String.class);
                     String statusStr = ds.child("status").getValue(String.class);
 
-                    TaskStatus status = TaskStatus.PENDING;
-                    if (statusStr != null && !statusStr.isEmpty()) {
-                        try {
-                            status = TaskStatus.valueOf(statusStr);
-                        } catch (IllegalArgumentException ignored) { }
-                    }
-
-                    // Фильтрация по дате (если задан диапазон)
                     if (filterStartDate != null && taskDate != null) {
                         if (taskDate.compareTo(filterStartDate) < 0 ||
                                 (filterEndDate != null && taskDate.compareTo(filterEndDate) > 0)) {
@@ -167,17 +170,30 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                         }
                     }
 
-                    // Фильтрация по работнику
                     if (filterWorker != null && (workerName == null || !workerName.equals(filterWorker))) {
                         continue;
                     }
 
-                    Task t = new Task(id, taskDate, acceptanceDate, address, comment, organization, status);
+                    TaskStatus status = TaskStatus.PENDING;
+                    if (statusStr != null) {
+                        try {
+                            status = TaskStatus.valueOf(statusStr);
+                        } catch (IllegalArgumentException ignored) {}
+                    }
+
+                    Task t = new Task(id,
+                            taskDate != null ? taskDate : "",
+                            acceptanceDate != null ? acceptanceDate : "",
+                            address != null ? address : "",
+                            comment != null ? comment : "",
+                            organization != null ? organization : "",
+                            status);
                     t.setWorkerName(workerName != null ? workerName : "");
                     t.setCompletionDate(completionDate != null ? completionDate : "");
                     taskList.add(t);
                 }
                 taskAdapter.notifyDataSetChanged();
+                updateNoTasksMessage();
             }
 
             @Override
@@ -205,33 +221,59 @@ public class DispatcherAllTasksActivity extends AppCompatActivity {
                     String statusStr = ds.child("status").getValue(String.class);
 
                     TaskStatus status = TaskStatus.PENDING;
-                    if (statusStr != null && !statusStr.isEmpty()) {
+                    if (statusStr != null) {
                         try {
                             status = TaskStatus.valueOf(statusStr);
-                        } catch (IllegalArgumentException ignored) { }
+                        } catch (IllegalArgumentException ignored) {}
                     }
 
-                    Task t = new Task(
-                            id,
+                    Task t = new Task(id,
                             taskDate != null ? taskDate : "",
                             acceptanceDate != null ? acceptanceDate : "",
                             address != null ? address : "",
                             comment != null ? comment : "",
                             organization != null ? organization : "",
-                            status
-                    );
+                            status);
                     t.setWorkerName(workerName != null ? workerName : "");
                     t.setCompletionDate(completionDate != null ? completionDate : "");
                     taskList.add(t);
                 }
                 taskAdapter.notifyDataSetChanged();
+                updateNoTasksMessage();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("DispatcherAllTasks", "Ошибка чтения данных", error.toException());
                 Toast.makeText(DispatcherAllTasksActivity.this, "Ошибка загрузки", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void updateNoTasksMessage() {
+        if (taskList.isEmpty()) {
+            StringBuilder filtersInfo = new StringBuilder("Фильтры: ");
+            boolean hasFilters = false;
+
+            if (filterStartDate != null && filterEndDate != null) {
+                filtersInfo.append("Дата: ").append(filterStartDate).append(" - ").append(filterEndDate);
+                hasFilters = true;
+            }
+            if (filterWorker != null) {
+                if (hasFilters) filtersInfo.append("; ");
+                filtersInfo.append("Работник: ").append(filterWorker);
+                hasFilters = true;
+            }
+
+            if (!hasFilters) {
+                filtersInfo.append("Нет");
+            }
+
+            textViewNoTasks.setText("Задачи не найдены.\n" + filtersInfo.toString());
+            textViewNoTasks.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            textViewNoTasks.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 }
