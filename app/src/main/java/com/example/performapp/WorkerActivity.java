@@ -161,6 +161,7 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 boolean hasAcceptedTask = false;
 
+                // Проверка: есть ли уже принятая задача у текущего работника
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Task existingTask = ds.getValue(Task.class);
                     if (existingTask != null &&
@@ -174,25 +175,35 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
 
                 if (hasAcceptedTask) {
                     Toast.makeText(WorkerActivity.this, "Вы уже приняли задачу. Завершите её перед принятием новой.", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Принятие задачи
-                    task.setStatus(TaskStatus.ACCEPTED);
-                    String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-                    task.setAcceptanceDate(dateTime);
-                    task.setWorkerName(currentWorkerLogin);
-
-                    tasksRef.child(task.getId()).setValue(task)
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(WorkerActivity.this, "Задача принята", Toast.LENGTH_SHORT).show();
-                                taskList.remove(task);
-                                taskAdapter.notifyDataSetChanged();
-                                checkForActiveTask(findViewById(R.id.btnCompleteTask));
-                                Intent intent = new Intent(WorkerActivity.this, TaskDetailActivity.class);
-                                intent.putExtra("task", task);
-                                startActivity(intent);
-                            })
-                            .addOnFailureListener(e -> Toast.makeText(WorkerActivity.this, "Ошибка обновления", Toast.LENGTH_SHORT).show());
+                    return;
                 }
+
+                // Проверка: забронирована ли задача другим работником
+                if (task.getWorkerName() != null && !task.getWorkerName().isEmpty()
+                        && !task.getWorkerName().equals(currentWorkerLogin)) {
+                    Toast.makeText(WorkerActivity.this, "Задача уже забронирована другим работником.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Принятие задачи
+                task.setStatus(TaskStatus.ACCEPTED);
+                String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                task.setAcceptanceDate(dateTime);
+                task.setWorkerName(currentWorkerLogin);
+
+                tasksRef.child(task.getId()).setValue(task)
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(WorkerActivity.this, "Задача принята", Toast.LENGTH_SHORT).show();
+                            taskList.remove(task);
+                            taskAdapter.notifyDataSetChanged();
+                            checkForActiveTask(findViewById(R.id.btnCompleteTask));
+                            Intent intent = new Intent(WorkerActivity.this, TaskDetailActivity.class);
+                            intent.putExtra("task", task);
+                            startActivity(intent);
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(WorkerActivity.this, "Ошибка обновления", Toast.LENGTH_SHORT).show()
+                        );
             }
 
             @Override
@@ -201,6 +212,7 @@ public class WorkerActivity extends AppCompatActivity implements TaskAdapter.Tas
             }
         });
     }
+
 
 
 
